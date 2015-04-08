@@ -9,7 +9,7 @@ LIBRARIES=$2
 cat >$d/.project <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>floodlight</name>
+	<name>floodlight-sos</name>
 	<comment></comment>
 	<projects>
 	</projects>

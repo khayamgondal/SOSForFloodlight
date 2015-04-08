@@ -183,6 +183,12 @@ public class StaticFlowEntries {
         if (match.getTransportDestination() != 0)
         	entry.put(StaticFlowEntryPusher.COLUMN_TP_DST, Short.toString(match.getTransportDestination()));
         
+        if (fm.getIdleTimeout() != 0)
+        	entry.put(StaticFlowEntryPusher.COLUMN_IDLE_TIMEOUT, Short.toString(fm.getIdleTimeout()));
+        
+        if (fm.getHardTimeout() != 0)
+        	entry.put(StaticFlowEntryPusher.COLUMN_HARD_TIMEOUT, Short.toString(fm.getHardTimeout()));
+        
         return entry;
     }
     
@@ -203,12 +209,12 @@ public class StaticFlowEntries {
             }
             switch(a.getType()) {
                 case OUTPUT:
-                    sb.append("output=" + Short.toString(((OFActionOutput)a).getPort()));
+                    sb.append("output=" + portToString(((OFActionOutput)a).getPort()));
                     break;
                 case OPAQUE_ENQUEUE:
                     int queue = ((OFActionEnqueue)a).getQueueId();
                     short port = ((OFActionEnqueue)a).getPort();
-                    sb.append("enqueue=" + Short.toString(port) + ":0x" + String.format("%02x", queue));
+                    sb.append("enqueue=" + portToString(port) + ":0x" + String.format("%02x", queue));
                     break;
                 case STRIP_VLAN:
                     sb.append("strip-vlan");
@@ -242,12 +248,12 @@ public class StaticFlowEntries {
                         IPv4.fromIPv4Address(((OFActionNetworkLayerDestination)a).getNetworkAddress()));
                     break;
                 case SET_TP_SRC:
-                    sb.append("set-src-port=" +
-                        Short.toString(((OFActionTransportLayerSource)a).getTransportPort()));
+                    sb.append("set-src-port=" + 
+                    	portToString(((OFActionTransportLayerSource)a).getTransportPort()));                   
                     break;
                 case SET_TP_DST:
-                    sb.append("set-dst-port=" +
-                        Short.toString(((OFActionTransportLayerDestination)a).getTransportPort()));
+                    sb.append("set-dst-port=" + 
+                    	portToString(((OFActionTransportLayerDestination)a).getTransportPort()));
                     break;
                 default:
                     log.error("Could not decode action: {}", a);
@@ -827,5 +833,25 @@ public class StaticFlowEntries {
         return Integer.decode(str).byteValue();
     }
 
+    /**
+	 * Floodlight stores switch and transport port numbers as shorts. In Java, there is no such thing
+	 * as an unsigned short. This means all port numbers greater than 32768 or 2^15 (for 2-byte
+	 * shorts) will appear as negative numbers. This poses a problem when printing the ports in
+	 * the debugger or converting them to strings (such as the SFP does).
+	 * 
+	 * @param port
+	 * @return
+	 */
+	private static int portToInteger(short port) {
+		int temp = (int) port;
+    	if (temp < 0 ) {
+    		temp = Short.MAX_VALUE*2 + temp + 2;
+    	}
+    	return temp;
+	}
+	private static String portToString(short port) {
+    	return Integer.toString(portToInteger(port));
+	}
+    
 }
 
