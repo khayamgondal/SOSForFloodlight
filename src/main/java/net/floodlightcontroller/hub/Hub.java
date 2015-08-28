@@ -40,6 +40,7 @@ import org.projectfloodlight.openflow.protocol.OFVersion;
 import org.projectfloodlight.openflow.protocol.action.OFAction;
 import org.projectfloodlight.openflow.protocol.action.OFActionOutput;
 import org.projectfloodlight.openflow.protocol.match.MatchField;
+import org.projectfloodlight.openflow.types.EthType;
 import org.projectfloodlight.openflow.types.OFBufferId;
 import org.projectfloodlight.openflow.types.OFPort;
 
@@ -115,12 +116,16 @@ public class Hub implements IFloodlightModule, IOFMessageListener {
 
     @Override
     public boolean isCallbackOrderingPrereq(OFType type, String name) {
-        return false;
+        if (type.equals(OFType.PACKET_IN) && name.equals("linkdiscovery")) {
+        	return true;
+        } else {
+        	return false;
+        }
     }
 
     @Override
     public boolean isCallbackOrderingPostreq(OFType type, String name) {
-        return false;
+    	return false;
     }
 
     // IFloodlightModule
