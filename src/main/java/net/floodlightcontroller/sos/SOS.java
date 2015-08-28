@@ -181,7 +181,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 			DST_AGENT_MAC = MacAddress.of(configOptions.get("dst-agent-mac"));
 			DST_AGENT_IP = IPv4Address.of(configOptions.get("dst-agent-ip"));
 			DST_AGENT_PORT = OFPort.of(Integer.parseInt(configOptions.get("dst-agent-sw-port")));
-			DST_AGENT_OVS_PORT = OFPort.of(Integer.parseInt(configOptions.get("src-agent-ovs-port")));
+			DST_AGENT_OVS_PORT = OFPort.of(Integer.parseInt(configOptions.get("dst-agent-ovs-port")));
 
 			SRC_AGENT_SWITCH_DPID = DatapathId.of(configOptions.get("src-agent-switch-dpid"));
 			DST_AGENT_SWITCH_DPID = DatapathId.of(configOptions.get("dst-agent-switch-dpid"));
@@ -242,8 +242,8 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 
 	@Override
 	public boolean isCallbackOrderingPostreq(OFType type, String name) {
-		if (type == OFType.PACKET_IN && name.equals("forwarding")) {
-			log.debug("SOS is telling Forwarding to run later.");
+		if (type == OFType.PACKET_IN && (name.equals("forwarding") || name.equals("hub"))) {
+			log.debug("SOS is telling Forwarding/Hub to run later.");
 			return true;
 		} else {
 			return false;

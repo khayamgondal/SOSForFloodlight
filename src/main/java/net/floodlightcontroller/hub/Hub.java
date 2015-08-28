@@ -61,7 +61,7 @@ public class Hub implements IFloodlightModule, IOFMessageListener {
 
     @Override
     public String getName() {
-        return Hub.class.getPackage().getName();
+        return "hub";
     }
 
     public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
