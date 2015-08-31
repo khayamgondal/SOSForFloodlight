@@ -43,6 +43,8 @@ import org.projectfloodlight.openflow.protocol.match.MatchField;
 import org.projectfloodlight.openflow.types.EthType;
 import org.projectfloodlight.openflow.types.OFBufferId;
 import org.projectfloodlight.openflow.types.OFPort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -50,6 +52,7 @@ import org.projectfloodlight.openflow.types.OFPort;
  */
 public class Hub implements IFloodlightModule, IOFMessageListener {
 	private enum HubType {USE_PACKET_OUT, USE_FLOW_MOD};
+	private static final Logger log = LoggerFactory.getLogger(Hub.class);
 
     private IFloodlightProviderService floodlightProvider;
 
@@ -68,6 +71,7 @@ public class Hub implements IFloodlightModule, IOFMessageListener {
     public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
     	OFMessage outMessage;
     	HubType ht = HubType.USE_PACKET_OUT;
+    	log.info("Got packet-in on switch {}", sw.getId());
     	switch (ht) {
     	case USE_FLOW_MOD:
             outMessage = createHubFlowMod(sw, msg);
