@@ -71,7 +71,6 @@ public class Hub implements IFloodlightModule, IOFMessageListener {
     public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
     	OFMessage outMessage;
     	HubType ht = HubType.USE_PACKET_OUT;
-    	log.info("Got packet-in on switch {}", sw.getId());
     	switch (ht) {
     	case USE_FLOW_MOD:
             outMessage = createHubFlowMod(sw, msg);
