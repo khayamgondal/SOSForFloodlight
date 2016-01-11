@@ -1251,7 +1251,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	}
 	
 	@Override
-	public SOSReturnCode clearStatistics() {
+	public synchronized SOSReturnCode clearStatistics() {
 		statistics.clear();
 		return SOSReturnCode.STATS_CLEARED;
 	}
