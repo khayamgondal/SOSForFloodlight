@@ -23,8 +23,13 @@ public class SOSWebRoutable implements RestletRoutable {
         router.attach("/whitelist/{" + STR_OPERATION + "}/json", WhitelistResource.class);
         router.attach("/module/{" + STR_OPERATION + "}/json", ModuleResource.class);
         router.attach("/config/json", ConfigResource.class);
-        router.attach("/stats/json", StatisticsResource.class);
         router.attach("/status/json", StatusResource.class);
+        router.attach("/stats/json", StatsResource.class);
+        router.attach("/stats/active/list/json", StatsActiveListResource.class);
+        router.attach("/stats/active/details/json", StatsActiveDetailsResource.class);
+        router.attach("/stats/terminated/list/json", StatsTerminatedListResource.class);
+        router.attach("/stats/terminated/details/json", StatsTerminatedDetailsResource.class);
+
         return router;
     }
 

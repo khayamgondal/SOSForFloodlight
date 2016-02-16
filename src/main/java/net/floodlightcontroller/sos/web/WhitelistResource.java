@@ -12,10 +12,13 @@ import net.floodlightcontroller.sos.SOSWhitelistEntry;
 
 import org.projectfloodlight.openflow.types.IPv4Address;
 import org.projectfloodlight.openflow.types.TransportPort;
+import org.restlet.data.Header;
+import org.restlet.engine.header.HeaderConstants;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +38,17 @@ public class WhitelistResource extends ServerResource {
 	protected static final String STR_START_TIME = "start-time";
 	protected static final String STR_STOP_TIME = "stop-time";
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Get
 	public Object getWhitelistEntries() {
+		Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers"); 
+	    getResponse().getAttributes().get(HeaderConstants.ATTRIBUTE_HEADERS);
+	    if (responseHeaders == null) {
+	    	responseHeaders = new Series(Header.class);
+	    	getResponse().getAttributes().put(HeaderConstants.ATTRIBUTE_HEADERS, responseHeaders);
+	    }
+	    responseHeaders.add(new Header("Access-Control-Allow-Origin", "http://openflow.sites.clemson.edu")); 
+		
 		ISOSService sosService = (ISOSService) getContext().getAttributes().get(ISOSService.class.getCanonicalName());
 
 		return sosService.getWhitelistEntries();
