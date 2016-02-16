@@ -100,7 +100,7 @@ public class SOSRoutingStrategyInterAgent implements ISOSRoutingStrategy {
 		/* 
 		 * Update the list of flows names for this connection
 		 * s.t. we can remove them later if needed.
-		 */
-		conn.addFlows(flows);
+		 *
+		conn.addFlows(flows);*/
 	}
 }
