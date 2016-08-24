@@ -18,7 +18,6 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import net.floodlightcontroller.core.IOFSwitchBackend;
-import net.floodlightcontroller.core.OFConnection;
 import net.floodlightcontroller.core.SwitchDescription;
 import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.WaitAppHandshakeState;
 import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.WaitTableFeaturesReplyState;
@@ -107,7 +106,7 @@ public class OFSwitchHandshakeHandlerVer13Test extends OFSwitchHandlerTestBase {
         sw.setPortDescStats(anyObject(OFPortDescStatsReply.class));
         expectLastCall().once();
        
-        expect(sw.getOFFactory()).andReturn(factory).once();
+        expect(sw.getOFFactory()).andReturn(factory).anyTimes();
         replay(sw);
 
         reset(switchManager);
