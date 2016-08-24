@@ -4,20 +4,20 @@ import javax.annotation.Nonnull;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import net.floodlightcontroller.routing.Route;
-import net.floodlightcontroller.topology.NodePortTuple;
+import net.floodlightcontroller.core.types.NodePortTuple;
+import net.floodlightcontroller.routing.Path;
 import net.floodlightcontroller.sos.web.SOSRouteSerializer;
 
 @JsonSerialize(using=SOSRouteSerializer.class)
 public class SOSRoute implements ISOSRoute {
 	private SOSDevice d1;
 	private SOSDevice d2;
-	private Route route;
+	private Path route;
 	private NodePortTuple d1_sp;
 	private NodePortTuple d2_sp;
 	private SOSRouteType t;
 	
-	public SOSRoute(@Nonnull SOSDevice src, @Nonnull SOSDevice dst, @Nonnull Route route) {
+	public SOSRoute(@Nonnull SOSDevice src, @Nonnull SOSDevice dst, @Nonnull Path route) {
 		if (src == null) {
 			throw new IllegalArgumentException("SOSDevice src cannot be null");
 		} else if (dst == null) {
@@ -72,7 +72,7 @@ public class SOSRoute implements ISOSRoute {
 	}
 		
 	@Override
-	public Route getRoute() {
+	public Path getRoute() {
 		return route;
 	}
 	

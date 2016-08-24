@@ -18,7 +18,7 @@ import org.projectfloodlight.openflow.types.OFPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.floodlightcontroller.topology.NodePortTuple;
+import net.floodlightcontroller.core.types.NodePortTuple;
 
 public class SOSRoutingStrategyFirstHopLastHop implements ISOSRoutingStrategy {
 

@@ -27,7 +27,6 @@ import org.projectfloodlight.openflow.types.IpProtocol;
 import org.projectfloodlight.openflow.types.MacAddress;
 import org.projectfloodlight.openflow.types.OFBufferId;
 import org.projectfloodlight.openflow.types.OFPort;
-import org.projectfloodlight.openflow.types.U64;
 import org.projectfloodlight.openflow.types.VlanVid;
 import org.projectfloodlight.openflow.protocol.OFType;
 import org.projectfloodlight.openflow.protocol.action.OFAction;
@@ -45,10 +44,12 @@ import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
+import net.floodlightcontroller.core.types.NodePortTuple;
 import net.floodlightcontroller.devicemanager.IDevice;
 import net.floodlightcontroller.devicemanager.IDeviceService;
 import net.floodlightcontroller.devicemanager.SwitchPort;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryService;
+import net.floodlightcontroller.linkdiscovery.Link;
 import net.floodlightcontroller.packet.ARP;
 import net.floodlightcontroller.packet.Data;
 import net.floodlightcontroller.packet.Ethernet;
@@ -58,13 +59,11 @@ import net.floodlightcontroller.packet.TCP;
 import net.floodlightcontroller.packet.UDP;
 import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.routing.IRoutingService;
-import net.floodlightcontroller.routing.Link;
-import net.floodlightcontroller.routing.Route;
+import net.floodlightcontroller.routing.Path;
 import net.floodlightcontroller.sos.web.SOSWebRoutable;
-import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
+import net.floodlightcontroller.staticentry.IStaticEntryPusherService;
 import net.floodlightcontroller.threadpool.IThreadPoolService;
 import net.floodlightcontroller.topology.ITopologyService;
-import net.floodlightcontroller.topology.NodePortTuple;
 
 /**
  * Steroid OpenFlow Service Module
@@ -77,7 +76,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	protected static IOFSwitchService switchService;
 	private static IRoutingService routingService;
 	private static IDeviceService deviceService;
-	protected static IStaticFlowEntryPusherService sfp;
+	protected static IStaticEntryPusherService sfp;
 	private static IRestApiService restApiService;
 	private static ITopologyService topologyService;
 	private static IThreadPoolService threadPoolService;
@@ -133,7 +132,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 								(a.getIPAddr().and(IPv4Address.of("255.255.255.0"))).or(IPv4Address.of("0.0.0.254")) /* Doesn't matter really; must be same subnet though */, 
 								MacAddress.BROADCAST /* Use broadcast as to not potentially confuse a host's ARP cache */, 
 								VlanVid.ZERO /* Switch will push correct VLAN tag if required */, 
-								switchService.getSwitch(sp.getSwitchDPID())
+								switchService.getSwitch(sp.getNodeId())
 								);
 					} else { /* We don't know where the agent is -- flood ARP everywhere */
 						Set<DatapathId> switches = switchService.getAllSwitchDpids();
@@ -164,7 +163,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 		l.add(IOFSwitchService.class);
 		l.add(IRoutingService.class);
 		l.add(IDeviceService.class);
-		l.add(IStaticFlowEntryPusherService.class);
+		l.add(IStaticEntryPusherService.class);
 		l.add(IRestApiService.class);
 		l.add(ITopologyService.class);
 		l.add(IThreadPoolService.class);
@@ -178,7 +177,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 		switchService = context.getServiceImpl(IOFSwitchService.class);
 		routingService = context.getServiceImpl(IRoutingService.class);
 		deviceService = context.getServiceImpl(IDeviceService.class);
-		sfp = context.getServiceImpl(IStaticFlowEntryPusherService.class);
+		sfp = context.getServiceImpl(IStaticEntryPusherService.class);
 		restApiService = context.getServiceImpl(IRestApiService.class);
 		topologyService = context.getServiceImpl(ITopologyService.class);
 		threadPoolService = context.getServiceImpl(IThreadPoolService.class);
@@ -745,7 +744,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 								!conn.getClientSideAgent().getActiveTransfers().contains(stats.getTransferID())) {
 							for (String flowName : conn.getFlowNames()) {
 								log.trace("Deleting flow {}", flowName);
-								sfp.deleteFlow(flowName);
+								sfp.deleteEntry(flowName);
 							}
 
 							log.warn("Received reports from all agents of transfer ID {}. Terminating SOS transfer", stats.getTransferID());
@@ -805,7 +804,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	 * @return
 	 */
 	private SOSRoute routeToFriendlyNeighborhoodAgent(SOSDevice dev, SwitchPort[] devAps, IPv4Address agentToAvoid) {
-		Route shortestPath = null;
+		Path shortestPath = null;
 		SOSAgent closestAgent = null;
 
 		/* First, make sure client has a valid attachment point */
@@ -837,7 +836,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 							continue;
 						}
 						log.trace("Asking for route from {} to {}", devTrueAp, agentTrueAp);
-						Route r = routingService.getRoute(devTrueAp.getSwitchDPID(), devTrueAp.getPort(), agentTrueAp.getSwitchDPID(), agentTrueAp.getPort(), U64.ZERO);
+						Path r = routingService.getPath(devTrueAp.getNodeId(), devTrueAp.getPortId(), agentTrueAp.getNodeId(), agentTrueAp.getPortId());
 						if (r != null && shortestPath == null) {
 							log.debug("Found initial agent {} w/route {}", agent, r);
 							shortestPath = r;
@@ -891,7 +890,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	 * @param r2
 	 * @return BEST_AGENT.A1 or BEST_AGENT.A2, whichever wins
 	 */
-	private static BEST_AGENT selectBestAgent(SOSAgent a1, Route r1, SOSAgent a2, Route r2) {
+	private static BEST_AGENT selectBestAgent(SOSAgent a1, Path r1, SOSAgent a2, Path r2) {
 		if (a1 == null) {
 			throw new IllegalArgumentException("Agent a1 cannot be null");
 		} else if (a2 == null) {
@@ -948,7 +947,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 		}
 	}
 
-	private static long computeLatency(Route r) {
+	private static long computeLatency(Path r) {
 		long latency = 0;
 		for (int i = 0; i < r.getPath().size(); i++) {
 			if (i % 2 == 1) { /* Only get odd for links [npt0, npt1]---[npt2, npt3]---[npt4, npt5] */
@@ -995,13 +994,13 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	private SwitchPort findTrueAttachmentPoint(SwitchPort[] aps) {
 		if (aps != null) {
 			for (SwitchPort ap : aps) {
-				Set<OFPort> portsOnLinks = topologyService.getPortsWithLinks(ap.getSwitchDPID());
+				Set<OFPort> portsOnLinks = topologyService.getPortsWithLinks(ap.getNodeId());
 				if (portsOnLinks == null) {
-					log.error("Error looking up ports with links from topology service for switch {}", ap.getSwitchDPID());
+					log.error("Error looking up ports with links from topology service for switch {}", ap.getNodeId());
 					continue;
 				}
 
-				if (!portsOnLinks.contains(ap.getPort())) {
+				if (!portsOnLinks.contains(ap.getPortId())) {
 					log.debug("Found 'true' attachment point of {}", ap);
 					return ap;
 				} else {
@@ -1042,7 +1041,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 			}
 
 
-			Route r = routingService.getRoute(sTrueAp.getSwitchDPID(), sTrueAp.getPort(), dTrueAp.getSwitchDPID(), dTrueAp.getPort(), U64.ZERO);
+			Path r = routingService.getPath(sTrueAp.getNodeId(), sTrueAp.getPortId(), dTrueAp.getNodeId(), dTrueAp.getPortId());
 			if (r == null) {
 				log.error("Could not find route between {} at AP {} and {} at AP {}", new Object[] { src, sTrueAp, dst, dTrueAp});
 			} else {
@@ -1324,4 +1323,10 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 			return SOSReturnCode.NOT_READY;
 		}
 	}
+
+    @Override
+    public void switchDeactivated(DatapathId switchId) {
+        // TODO Auto-generated method stub
+        
+    }
 }
