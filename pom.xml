@@ -162,6 +162,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.json</artifactId>
+			<version>${lib-restlet-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
 			<artifactId>org.restlet.ext.jackson</artifactId>
 			<version>${lib-restlet-version}</version>
 		</dependency>
@@ -267,6 +273,7 @@
 			<artifactId>jackson-dataformat-cbor</artifactId>
 			<version>${lib-jackson-version}</version>
 		</dependency>
+
 	</dependencies>
 	<properties>
 		<lib-restlet-version>2.3.2</lib-restlet-version>

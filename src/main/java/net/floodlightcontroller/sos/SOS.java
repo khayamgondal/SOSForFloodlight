@@ -1,5 +1,7 @@
 package net.floodlightcontroller.sos;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +14,14 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import net.floodlightcontroller.util.SOSAgentUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.projectfloodlight.openflow.protocol.match.MatchField;
 import org.projectfloodlight.openflow.protocol.OFFactory;
 import org.projectfloodlight.openflow.protocol.OFMessage;
@@ -264,7 +274,48 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 			return false;
 		}
 	}
+	/**
+	 * @author Khayam Anjam kanjam@clemson.edu
+	 * Now Instead of sending a UDP packet. We will make a call to Agent's rest server
+	 */
+	private void sendInfoToAgent(SOSConnection conn, boolean isClientSideAgent) {
+		HttpClient httpClient = new DefaultHttpClient();
+		JSONObject requestObject = new JSONObject();
+		try {
+			requestObject.put("is-client-agent", isClientSideAgent)
+					.put("transfer-id", conn.getTransferID().toString())
+					.put("client-agent-ip", conn.getClient().getIPAddr().toString())
+					.put("client-agent-port", conn.getClient().getTcpPort().toString())
+					.put("server-agent-ip", conn.getServerSideAgent().getIPAddr().toString())
+					.put("num-parallel-socks", conn.getNumParallelSockets())
+					.put("buffer-size", conn.getBufferSize())
+					.put("queue-capacity", conn.getQueueCapacity())
+					.put("server-ip", conn.getServer().getIPAddr().toString())
+					.put("server-port", conn.getServer().getTcpPort().toString()) ;
 
+		StringBuilder uriBuilder = new StringBuilder(3);
+		uriBuilder.append(SOSAgentUtils.HTTP_PRESTRING);
+		uriBuilder.append(SOSAgentUtils.addressBuilder(conn.getClient().getIPAddr().toString(), SOSAgentUtils.SERVER_PORT));
+		uriBuilder.append(SOSAgentUtils.PathBuilder(SOSAgentUtils.REQUEST_PATH));
+
+		HttpPost httRequest = new HttpPost(uriBuilder.toString());
+		org.apache.http.entity.StringEntity stringEntry = null;
+
+			stringEntry = new org.apache.http.entity.StringEntity(requestObject.toString(), "UTF-8");
+			httRequest.setEntity(stringEntry);
+			HttpResponse response = httpClient.execute(httRequest);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+
+	}
 	/**
 	 * Send a UDP information packet to an agent. This informs the agent of the SOS
 	 * connection about to take place. For example, a client-side agent is informed of
@@ -275,7 +326,8 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	 * @param conn, The associated SOSConnection for the UDP info packets.
 	 * @param isSourceAgent, Send to source agent (true); send to destination agent (false).
 	 */
-	private void sendInfoToAgent(FloodlightContext cntx, SOSConnection conn, boolean isClientSideAgent) {
+	private void sendInfoToAgent(FloodlightContext cntx, SOSConnection conn,
+								 boolean isClientSideAgent) {
 		OFFactory factory;
 
 		/* Both use route last-hop, since the packets are destined for the agents */
@@ -653,11 +705,12 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 					statistics.addActiveConnection(newSOSconnection);
 
 					log.debug("Starting new SOS session: \r\n" + newSOSconnection.toString());
-
 					/* Send UDP messages to the home and foreign agents */
-					log.debug("Sending UDP information packets to client-side and server-side agents");
-					sendInfoToAgent(cntx, newSOSconnection, true); /* home */
-					sendInfoToAgent(cntx, newSOSconnection, false); /* foreign */
+					//log.debug("Sending UDP information packets to client-side and server-side agents");
+					//sendInfoToAgent(cntx, newSOSconnection, true); /* home */
+					//sendInfoToAgent(cntx, newSOSconnection, false); /* foreign */
+
+					sendInfoToAgent(newSOSconnection, true);
 
 					/* Push flows and add flow names to connection (for removal upon termination) */
 					log.debug("Pushing client-side SOS flows");
