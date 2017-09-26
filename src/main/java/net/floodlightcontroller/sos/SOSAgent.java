@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.projectfloodlight.openflow.types.IPv4Address;
+import org.projectfloodlight.openflow.types.IpProtocol;
 import org.projectfloodlight.openflow.types.TransportPort;
 
 import net.floodlightcontroller.sos.web.SOSAgentSerializer;
@@ -18,7 +19,7 @@ public class SOSAgent extends SOSDevice implements ISOSAgent {
 	private TransportPort control_port;
 	private TransportPort feedback_port;
 	private TransportPort stats_port;
-
+	private TransportPort rest_port;
 	private Set<UUID> active_transfers;
 	
 	public SOSAgent() {
@@ -27,14 +28,16 @@ public class SOSAgent extends SOSDevice implements ISOSAgent {
 		control_port = TransportPort.NONE;
 		feedback_port = TransportPort.NONE;
 		stats_port = TransportPort.NONE;
+		rest_port = TransportPort.NONE;
 		active_transfers = new HashSet<UUID>();
 	}
-	public SOSAgent(IPv4Address ip, TransportPort data, TransportPort control, TransportPort feedback, TransportPort stats) {
-		super(SOSDeviceType.AGENT, ip);
+	public SOSAgent(IPv4Address ip, IPv4Address restIP, TransportPort data, TransportPort control, TransportPort feedback, TransportPort stats, TransportPort rest) {
+		super(SOSDeviceType.AGENT, ip, restIP);
 		data_port = data;
 		control_port = control;
 		feedback_port = feedback;
 		stats_port = stats;
+		rest_port = rest;
 		active_transfers = new HashSet<UUID>();
 	}
 	
@@ -56,6 +59,11 @@ public class SOSAgent extends SOSDevice implements ISOSAgent {
 	@Override
 	public TransportPort getStatsPort() {
 		return stats_port;
+	}
+
+	@Override
+	public TransportPort getRestPort() {
+		return rest_port;
 	}
 	
 	public boolean addTransferId(UUID newConnection) {
@@ -82,7 +90,7 @@ public class SOSAgent extends SOSDevice implements ISOSAgent {
 	@Override
 	public String toString() {
 		return "SOSAgent [ " + super.toString() + " data_port=" + data_port + ", control_port="
-				+ control_port + " feedback_port=" + feedback_port + " stats_port=" + stats_port + "]";
+				+ control_port + " feedback_port=" + feedback_port + " stats_port=" + stats_port +  "rest_port" + rest_port + "]";
 	}
 	
 	@Override
@@ -97,6 +105,8 @@ public class SOSAgent extends SOSDevice implements ISOSAgent {
 				+ ((feedback_port == null) ? 0 : feedback_port.hashCode());
 		result = prime * result
 				+ ((stats_port == null) ? 0 : stats_port.hashCode());
+		result = prime * result
+				+ ((rest_port == null) ? 0 : rest_port.hashCode());
 		return result;
 	}
 	
@@ -128,6 +138,11 @@ public class SOSAgent extends SOSDevice implements ISOSAgent {
 			if (other.stats_port != null)
 				return false;
 		} else if (!stats_port.equals(other.stats_port))
+			return false;
+		if (rest_port == null) {
+			if (other.rest_port != null)
+				return false;
+		} else if (!rest_port.equals(other.rest_port))
 			return false;
 		return true;
 	}

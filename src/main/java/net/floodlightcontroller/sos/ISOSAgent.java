@@ -38,7 +38,11 @@ public interface ISOSAgent extends ISOSDevice {
 	 * @return
 	 */
 	public TransportPort getStatsPort();
-	
+
+	/**
+	 * Retrieves the Rest server port what agents uses
+	 */
+	public TransportPort getRestPort();
 	/**
 	 * Retrieve all SOS sessions that are ongoing
 	 * for this particular agent.

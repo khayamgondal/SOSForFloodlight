@@ -5,7 +5,7 @@ package net.floodlightcontroller.util;
  * This class contains paths from the agent
  */
 public class SOSAgentUtils {
-    public static final int SERVER_PORT = 8002;
+    public static final int AGENT_REST_PORT = 8002;
 
     public static final String HTTP_PRESTRING = "http://";
     public static final String BASE_PATH = "/sos";
@@ -17,4 +17,6 @@ public class SOSAgentUtils {
         return BASE_PATH + API_VERSION + path;
     }
     public static String addressBuilder( String IP, int port) { return IP + ":" + port; }
+    public static String addressBuilder( String IP, String port) { return IP + ":" + port; }
+
 }

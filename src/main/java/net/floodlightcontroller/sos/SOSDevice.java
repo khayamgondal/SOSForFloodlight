@@ -5,6 +5,7 @@ import org.projectfloodlight.openflow.types.MacAddress;
 
 public abstract class SOSDevice implements ISOSDevice {
 	private IPv4Address ip_addr;
+	private IPv4Address rest_ip_addr;
 	private MacAddress mac_addr;
 	private SOSDeviceType type;
 	
@@ -15,6 +16,12 @@ public abstract class SOSDevice implements ISOSDevice {
 	}
 	public SOSDevice(SOSDeviceType t, IPv4Address ip) {
 		ip_addr = ip;
+		mac_addr = MacAddress.NONE;
+		type = t;
+	}
+	public SOSDevice(SOSDeviceType t, IPv4Address ip, IPv4Address restIPAddr) {
+		ip_addr = ip;
+		rest_ip_addr = restIPAddr;
 		mac_addr = MacAddress.NONE;
 		type = t;
 	}
@@ -31,6 +38,11 @@ public abstract class SOSDevice implements ISOSDevice {
 	@Override
 	public IPv4Address getIPAddr() {
 		return ip_addr;
+	}
+
+	@Override
+	public IPv4Address getRestIpAddr() {
+		return rest_ip_addr;
 	}
 	
 	public void setMACAddr(MacAddress mac) {

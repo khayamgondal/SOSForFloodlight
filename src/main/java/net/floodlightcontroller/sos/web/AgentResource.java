@@ -28,10 +28,12 @@ public class AgentResource extends ServerResource {
 	protected static final String STR_OPERATION_REMOVE = "remove";
 
 	protected static final String STR_IP = "ip-address";
+	protected static final String STR_REST_IP = "rest-ip-address";
 	protected static final String STR_DATA_PORT = "data-port";
 	protected static final String STR_CONTROL_PORT = "control-port";
 	protected static final String STR_FEEDBACK_PORT = "feedback-port";
 	protected static final String STR_STATS_PORT = "stats-port";
+	protected static final String STR_REST_PORT = "rest-port";
 
 	@Get
 	public Object getAgents() {
@@ -108,10 +110,12 @@ public class AgentResource extends ServerResource {
 		JsonParser jp;
 
 		IPv4Address ip = IPv4Address.NONE;
+		IPv4Address restIp = IPv4Address.NONE;
 		TransportPort dataPort = TransportPort.NONE;
 		TransportPort controlPort = TransportPort.NONE;
 		TransportPort feedbackPort = TransportPort.NONE;
 		TransportPort statsPort = TransportPort.NONE;
+		TransportPort restPort = TransportPort.NONE;
 
 		if (json == null || json.isEmpty()) {
 			return null;
@@ -145,7 +149,14 @@ public class AgentResource extends ServerResource {
 					} catch (IllegalArgumentException e) {
 						log.error("Invalid IPv4 address {}", value);
 					}
-				} else if (key.equals(STR_DATA_PORT)) {
+				} else if (key.equals(STR_REST_IP)) {
+					try {
+						restIp = IPv4Address.of(value);
+					} catch (IllegalArgumentException e) {
+						log.error("Invalid IPv4 address {}", value);
+					}
+				}
+				else if (key.equals(STR_DATA_PORT)) {
 					try {
 						dataPort = TransportPort.of(Integer.parseInt(value));
 					} catch (IllegalArgumentException e) {
@@ -169,18 +180,26 @@ public class AgentResource extends ServerResource {
 					} catch (IllegalArgumentException e) {
 						log.error("Invalid stats port {}", value);
 					}
+				}else if (key.equals(STR_REST_PORT)) {
+					try {
+						restPort = TransportPort.of(Integer.parseInt(value));
+					} catch (IllegalArgumentException e) {
+						log.error("Invalid stats port {}", value);
+					}
 				}
 			}
 		} catch (IOException e) {
 			log.error("Error parsing JSON into SOSAgent {}", e);
 		}
 		
-		if (!ip.equals(IPv4Address.NONE) 
+		if (!ip.equals(IPv4Address.NONE)
+				&& !restIp.equals(IPv4Address.NONE)
 				&& !dataPort.equals(TransportPort.NONE) 
 				&& !controlPort.equals(TransportPort.NONE)
 				&& !feedbackPort.equals(TransportPort.NONE)
-				&& !statsPort.equals(TransportPort.NONE)) {
-			return new SOSAgent(ip, dataPort, controlPort, feedbackPort, statsPort);
+				&& !statsPort.equals(TransportPort.NONE)
+				&& !restPort.equals(TransportPort.NONE)) {
+			return new SOSAgent(ip, restIp, dataPort, controlPort, feedbackPort, statsPort, restPort);
 		} else {
 			return null;
 		}

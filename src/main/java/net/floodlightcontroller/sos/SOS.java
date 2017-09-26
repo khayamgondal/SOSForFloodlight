@@ -284,8 +284,8 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 		try {
 			requestObject.put("is-client-agent", isClientSideAgent)
 					.put("transfer-id", conn.getTransferID().toString())
-					.put("client-agent-ip", conn.getClient().getIPAddr().toString())
-					.put("client-agent-port", conn.getClient().getTcpPort().toString())
+					.put("client-ip", conn.getClient().getIPAddr().toString())
+					.put("client-port", conn.getClient().getTcpPort().toString())
 					.put("server-agent-ip", conn.getServerSideAgent().getIPAddr().toString())
 					.put("num-parallel-socks", conn.getNumParallelSockets())
 					.put("buffer-size", conn.getBufferSize())
@@ -295,15 +295,20 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 
 		StringBuilder uriBuilder = new StringBuilder(3);
 		uriBuilder.append(SOSAgentUtils.HTTP_PRESTRING);
-		uriBuilder.append(SOSAgentUtils.addressBuilder(conn.getClient().getIPAddr().toString(), SOSAgentUtils.SERVER_PORT));
+		uriBuilder.append(SOSAgentUtils.addressBuilder(conn.getClientSideAgent().getRestIpAddr().toString(),
+				conn.getClientSideAgent().getRestPort().toString()));
 		uriBuilder.append(SOSAgentUtils.PathBuilder(SOSAgentUtils.REQUEST_PATH));
 
 		HttpPost httRequest = new HttpPost(uriBuilder.toString());
+		//HttpPost httRequest = new HttpPost("http://127.0.0.1:8002/sos/v1.0/request");
 		org.apache.http.entity.StringEntity stringEntry = null;
-
+		//log.info("yahoo"+conn.getClientSideAgent().getRestIpAddr());
 			stringEntry = new org.apache.http.entity.StringEntity(requestObject.toString(), "UTF-8");
 			httRequest.setEntity(stringEntry);
 			HttpResponse response = httpClient.execute(httRequest);
+			log.info("Sending HTTP request to client-agent {} and server-agent {}",
+					conn.getClientSideAgent().getIPAddr().toString(),
+					conn.getServerSideAgent().getIPAddr());
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (ClientProtocolException e) {

@@ -8,4 +8,6 @@ public interface ISOSDevice {
 	public IPv4Address getIPAddr();
 	
 	public MacAddress getMACAddr();
+
+	public IPv4Address getRestIpAddr();
 }
