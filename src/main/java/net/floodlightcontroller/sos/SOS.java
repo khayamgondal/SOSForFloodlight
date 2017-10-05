@@ -20,6 +20,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.projectfloodlight.openflow.protocol.match.MatchField;
@@ -278,7 +280,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	 * @author Khayam Anjam kanjam@clemson.edu
 	 * Now Instead of sending a UDP packet. We will make a call to Agent's rest server
 	 */
-	private void sendInfoToAgent(SOSConnection conn, boolean isClientSideAgent) {
+	private boolean sendInfoToAgent(SOSConnection conn, boolean isClientSideAgent) {
 		HttpClient httpClient = new DefaultHttpClient();
 		JSONObject requestObject = new JSONObject();
 		try {
@@ -295,28 +297,41 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 
 		StringBuilder uriBuilder = new StringBuilder(3);
 		uriBuilder.append(SOSAgentUtils.HTTP_PRESTRING);
-		uriBuilder.append(SOSAgentUtils.addressBuilder(conn.getClientSideAgent().getRestIpAddr().toString(),
-				conn.getClientSideAgent().getRestPort().toString()));
+		if (isClientSideAgent) {
+			uriBuilder.append(SOSAgentUtils.addressBuilder(conn.getClientSideAgent().getRestIpAddr().toString(),
+					conn.getClientSideAgent().getRestPort().toString()));
+			log.info("Chosen Client side agent with IP {}", conn.getClientSideAgent().getIPAddr().toString());
+		}
+		else {
+			uriBuilder.append(SOSAgentUtils.addressBuilder(conn.getServerSideAgent().getRestIpAddr().toString(),
+					conn.getServerSideAgent().getRestPort().toString()));
+			log.info("Chosen Server side agent with IP {}", conn.getServerSideAgent().getIPAddr().toString());
+		}
 		uriBuilder.append(SOSAgentUtils.PathBuilder(SOSAgentUtils.REQUEST_PATH));
 
 		HttpPost httRequest = new HttpPost(uriBuilder.toString());
-		//HttpPost httRequest = new HttpPost("http://127.0.0.1:8002/sos/v1.0/request");
 		org.apache.http.entity.StringEntity stringEntry = null;
-		//log.info("yahoo"+conn.getClientSideAgent().getRestIpAddr());
-			stringEntry = new org.apache.http.entity.StringEntity(requestObject.toString(), "UTF-8");
+		stringEntry = new org.apache.http.entity.StringEntity(requestObject.toString(), "UTF-8");
 			httRequest.setEntity(stringEntry);
+			log.debug("JSON Object to sent {}", requestObject.toString());
 			HttpResponse response = httpClient.execute(httRequest);
 			log.info("Sending HTTP request to client-agent {} and server-agent {}",
 					conn.getClientSideAgent().getIPAddr().toString(),
 					conn.getServerSideAgent().getIPAddr());
+			log.debug("Agent returned {}", response.toString());
+			return Boolean.parseBoolean(response.toString());
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
+			return false;
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
+			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		} catch (JSONException e) {
 			e.printStackTrace();
+			return false;
 		}
 
 
@@ -329,7 +344,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	 * connections to establish server sockets, the server IP itself, and so forth.
 	 * 
 	 * @param conn, The associated SOSConnection for the UDP info packets.
-	 * @param isSourceAgent, Send to source agent (true); send to destination agent (false).
+	 * @param isClientSideAgent, Send to source agent (true); send to destination agent (false).
 	 */
 	private void sendInfoToAgent(FloodlightContext cntx, SOSConnection conn,
 								 boolean isClientSideAgent) {
