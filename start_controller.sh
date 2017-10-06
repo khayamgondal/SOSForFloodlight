@@ -4,4 +4,4 @@
 #Note! it will start the controller inside the screen
 
 cd  /home/ubuntu/sos-for-floodlight
-screen -S floodlight java -jar target/floodlight.jar
+java -jar target/floodlight.jar
