@@ -309,12 +309,12 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 		}
 		uriBuilder.append(SOSAgentUtils.PathBuilder(SOSAgentUtils.REQUEST_PATH));
 
-		HttpPost httRequest = new HttpPost(uriBuilder.toString());
+		HttpPost httpRequest = new HttpPost(uriBuilder.toString());
 		org.apache.http.entity.StringEntity stringEntry = null;
 		stringEntry = new org.apache.http.entity.StringEntity(requestObject.toString(), "UTF-8");
-			httRequest.setEntity(stringEntry);
+			httpRequest.setEntity(stringEntry);
 			log.debug("JSON Object to sent {}", requestObject.toString());
-			HttpResponse response = httpClient.execute(httRequest);
+			HttpResponse response = httpClient.execute(httpRequest);
 			log.info("Sending HTTP request to client-agent {} and server-agent {}",
 					conn.getClientSideAgent().getIPAddr().toString(),
 					conn.getServerSideAgent().getIPAddr());

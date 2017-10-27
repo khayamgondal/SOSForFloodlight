@@ -12,11 +12,19 @@ public abstract class SOSDevice implements ISOSDevice {
 	public SOSDevice(SOSDeviceType t) {
 		ip_addr = IPv4Address.NONE;
 		mac_addr = MacAddress.NONE;
+		rest_ip_addr = IPv4Address.NONE;
 		type = t;
 	}
 	public SOSDevice(SOSDeviceType t, IPv4Address ip) {
 		ip_addr = ip;
 		mac_addr = MacAddress.NONE;
+		rest_ip_addr = IPv4Address.NONE;
+		type = t;
+	}
+	public SOSDevice(SOSDeviceType t, IPv4Address ip, MacAddress mac) {
+		ip_addr = ip;
+		mac_addr = mac;
+		rest_ip_addr = IPv4Address.NONE;
 		type = t;
 	}
 	public SOSDevice(SOSDeviceType t, IPv4Address ip, IPv4Address restIPAddr) {
@@ -25,12 +33,7 @@ public abstract class SOSDevice implements ISOSDevice {
 		mac_addr = MacAddress.NONE;
 		type = t;
 	}
-	public SOSDevice(SOSDeviceType t, IPv4Address ip, MacAddress mac) {
-		ip_addr = ip;
-		mac_addr = mac;
-		type = t;
-	}
-	
+
 	public void setIPAddr(IPv4Address ip) {
 		ip_addr = ip;
 	}
