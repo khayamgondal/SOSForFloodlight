@@ -289,6 +289,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 					.put("client-ip", conn.getClient().getIPAddr().toString())
 					.put("client-port", conn.getClient().getTcpPort().toString())
 					.put("server-agent-ip", conn.getServerSideAgent().getIPAddr().toString())
+					.put("client-agent-ip", conn.getClientSideAgent().getIPAddr().toString())
 					.put("num-parallel-socks", conn.getNumParallelSockets())
 					.put("buffer-size", conn.getBufferSize())
 					.put("queue-capacity", conn.getQueueCapacity())
