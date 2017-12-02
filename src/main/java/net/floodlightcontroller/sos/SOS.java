@@ -732,7 +732,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 					//sendInfoToAgent(cntx, newSOSconnection, false); /* foreign */
 
 					sendInfoToAgent(newSOSconnection, true);
-					sendInfoToAgent(newSOSconnection, false);
+					//sendInfoToAgent(newSOSconnection, false);
 
 					/* Push flows and add flow names to connection (for removal upon termination) */
 					log.debug("Pushing client-side SOS flows");
