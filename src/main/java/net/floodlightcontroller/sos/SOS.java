@@ -282,6 +282,7 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 	 */
 	private boolean sendInfoToAgent(SOSConnection conn, boolean isClientSideAgent) {
 		HttpClient httpClient = new DefaultHttpClient();
+		JSONObject wrapper = new JSONObject();
 		JSONObject requestObject = new JSONObject();
 		try {
 			requestObject.put("is-client-agent", isClientSideAgent)
@@ -295,8 +296,9 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 					.put("queue-capacity", conn.getQueueCapacity())
 					.put("server-ip", conn.getServer().getIPAddr().toString())
 					.put("server-port", conn.getServer().getTcpPort().toString()) ;
+			wrapper.put("request", requestObject);
 
-		StringBuilder uriBuilder = new StringBuilder(3);
+			StringBuilder uriBuilder = new StringBuilder(3);
 		uriBuilder.append(SOSAgentUtils.HTTP_PRESTRING);
 		if (isClientSideAgent) {
 			uriBuilder.append(SOSAgentUtils.addressBuilder(conn.getClientSideAgent().getRestIpAddr().toString(),
@@ -312,9 +314,9 @@ public class SOS implements IOFMessageListener, IOFSwitchListener, IFloodlightMo
 
 		HttpPost httpRequest = new HttpPost(uriBuilder.toString());
 		org.apache.http.entity.StringEntity stringEntry = null;
-		stringEntry = new org.apache.http.entity.StringEntity(requestObject.toString(), "UTF-8");
+		stringEntry = new org.apache.http.entity.StringEntity(wrapper.toString(), "UTF-8");
 			httpRequest.setEntity(stringEntry);
-			log.debug("JSON Object to sent {}", requestObject.toString());
+			log.debug("JSON Object to sent {}", wrapper.toString());
 			HttpResponse response = httpClient.execute(httpRequest);
 			log.info("Sending HTTP request to client-agent {} and server-agent {}",
 					conn.getClientSideAgent().getIPAddr().toString(),
